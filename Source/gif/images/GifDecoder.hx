@@ -157,12 +157,17 @@ class GifDecoder
     
     static function readComment(input:Input, gifFrameInfo:GifFrameInfo)
     {
-    	//chomp the comment
-    	var b;
-    	do {
-			b=input.readByte()&0xFF;
-			if (b>0) input.read(b);
-		} while(b>0);
+        //chomp the comment
+        var comment:String = "";
+        var commentLength = input.readByte();
+        for (i in 0 ... commentLength) {
+            comment += String.fromCharCode(input.readByte());
+        }
+        trace("Gif Comment: \""+comment+"\"");
+        var terminator = input.readByte();
+        if (terminator != 0) {
+            throw Error.InvalidFormat;
+        }
     }
     
     static function readApplicationExtension(input:Input, gifFrameInfo:GifFrameInfo)
