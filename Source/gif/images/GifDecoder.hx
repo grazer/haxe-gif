@@ -181,7 +181,9 @@ class GifDecoder
         var auth2 = input.readByte();
         var auth3 = input.readByte();
         
-        if (id1==1346454355 && id2==808333893 && //NETSCAPE
+        if (
+            ((id1==1346454355 && id2==808333893) ||  //NETSCAPE
+             (id1==1398031694 && id2==1162887491)) && // STENEPAC
         	auth1 == 0x32 && auth2 == 0x2e && auth3 == 0x30) //2.0
         {
         	var applicationBlockSize = input.readByte();
@@ -197,17 +199,61 @@ class GifDecoder
 	        var terminator = input.readByte();
 	        if (terminator != 0) {
 	            throw Error.InvalidFormat;
-	        }
+            }
+        } else if (
+                ((id1==542133592 && id2==1635017028) ||  // XMP Data
+                 (id1==544238968 && id2==1635017060)) &&  // xmp data
+                ((auth1 == 0x58 && auth2 == 0x4d && auth3 == 0x50) || // XMP  
+                 (auth1 == 0x78 && auth2 == 0x6d && auth3 == 0x70)))  // xmp
+        {
+            // XMP Data format ends with a "magic trailer" sequence of bytes:
+            // https://archimedespalimpsest.net/Documents/External/XMP/XMPSpecificationPart3.pdf
+
+            // start looking for magic trailer countdown
+            var prevTrailerByte:Null<Int> = null;
+            var byteCount = 0;
+            var b;
+            while (true) {
+                b=input.readByte();
+
+                // look for end of magic trailer: 0A090807 06050403 02010000
+                if (prevTrailerByte == null) {
+                    // maybe we found the start of the trailer?
+                    // really this should start at 0xff
+                    // but I've found many corrupt magic trailers, so 
+                    // just checking the last 11 bytes seems reliable
+                    if (b == 0x0A) {
+                        prevTrailerByte = b;
+                        byteCount = 1;
+                    }
+                } else {
+                    // track countdown
+                    if (b == prevTrailerByte-1) {
+                        prevTrailerByte = b;
+                        byteCount++;
+                    } else if (prevTrailerByte == 0) {
+                        if (byteCount == 11) {
+                            return;
+                        }
+                    } else {
+                        // not actually the magic trailer
+                        // restart the search
+                        prevTrailerByte = null;
+                        byteCount = 0;
+                    }
+                }
+            }
         }
         else //unknown application extension
         {
-        	//chomp the unknown extension and try to continue
-        	var b;
-	    	do{
-				b=input.readByte()&0xFF;
-				if (b>0) input.read(b);
-			}
-			while(b>0);
+            trace("Unknown Extension Found");
+            //chomp the unknown extension and try to continue
+            var b;
+            do{
+                b=input.readByte() & 0xFF;
+                if (b>0) input.read(b);
+            }
+            while(b>0);
         }
     }
     
