@@ -407,9 +407,12 @@ class GifDecoder
 		{
 			gifFrameInfo.imageData[i] = 0;	// clear missing pixels
 		}
-		
-		input.readByte();
-		
+
+        var terminator = input.readByte();
+        if (terminator != 0) 
+        {
+            throw Error.InvalidFormat;
+        }
 	}
 	
     static function createInitialDictionary(lzwMinimumCodeSize : Int) : Map<Int, Bits>
