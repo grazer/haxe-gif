@@ -109,4 +109,4 @@ class AnimatedGif extends Sprite{
 		timer.start();
 	}
 
-}}
+}
