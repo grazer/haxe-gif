@@ -9,8 +9,8 @@ import flash.utils.Timer;
 
 class AnimatedGif extends Sprite{
 
-	private var bmaps:Array<Bitmap>;
-	private var frames:Array<GifFrameInfo>;
+	public var bmaps:Array<Bitmap>;
+	public var frames:Array<GifFrameInfo>;
 	var pos:Int=0;
 	public var playing(default,null):Bool;
 	private var timer:Timer;
@@ -109,4 +109,4 @@ class AnimatedGif extends Sprite{
 		timer.start();
 	}
 
-}
+}}
