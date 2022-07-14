@@ -116,7 +116,8 @@ class GifDecoder
         switch(bytes.toString()) {
             case "87a":
                 gifInfo.version = Gif87a;
-                throw Error.UnsupportedFormat;
+                // some encoders still use the Gif87a header
+                // throw Error.UnsupportedFormat;
             case "89a":
                 gifInfo.version = Gif89a;
             default:
