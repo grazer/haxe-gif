@@ -374,20 +374,24 @@ class GifDecoder
 					pixelStack[top++] = suffix[code];
 					code = prefix[code];
 				}
-				first = (suffix[code]) & 0xff;
 				
-				//  Add a new string to the string table,
-				
-				if (available >= MaxStackSize) break;
+                first = (suffix[code]) & 0xff;
 				pixelStack[top++] = first;
-				prefix[available] = old_code;
-				suffix[available] = first;
-				available++;
-				if (((available & code_mask) == 0) && (available < MaxStackSize)) 
-				{
-					code_size++;
-					code_mask += available;
-				}
+                
+                // add a new string to the table, but only if space is available
+                // if not, just continue with current table until a clear code is found
+                // (deferred clear code implementation as per GIF spec)
+                // https://www.w3.org/Graphics/GIF/spec-gif89a.txt
+                if (available < MaxStackSize) {
+                    prefix[available] = old_code;
+                    suffix[available] = first;
+                    available++;
+                    if (((available & code_mask) == 0) && (available < MaxStackSize)) 
+                    {
+                        code_size++;
+                        code_mask += available;
+                    }
+                }
 				old_code = in_code;
 				
 			}
