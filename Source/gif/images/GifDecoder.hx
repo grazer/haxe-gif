@@ -248,7 +248,6 @@ class GifDecoder
 		{
 			try 
 			{
-				var count = 0;
 				while (n < blockSize) 
 				{
 					input.readBytes(block, n, blockSize - n);
